@@ -43,7 +43,7 @@
 import { defineComponent } from 'vue';
 import axios from 'axios';
 import { IonInput } from '@ionic/vue';
-import { useRouter } from 'vue-router';
+
 
 
 export default defineComponent({
@@ -59,9 +59,15 @@ export default defineComponent({
   },
   methods: {
     async login() {
+
+      // Validar campos vacíos
+      if (!this.numeroIdentificacion || !this.password) {
+        this.error = 'Por favor, complete todos los campos.';
+        return;
+      }
+
       try {
-        console.log('Número de Identificación:', this.numeroIdentificacion);
-        console.log('Contraseña:', this.password);
+
 
         const response = await axios.post(
           'http://localhost:8000/api/usuarios/login',
@@ -84,14 +90,24 @@ export default defineComponent({
           } else if (user.rol === 'paciente') {
             this.$router.push('/dashboard/paciente');
           }
-        } else {
-          this.error = 'Número de identificación o contraseña incorrectos';
+          } else {
+            this.error = 'Número de identificación o contraseña incorrectos';
+          }
+        } catch (err: any) {
+          if (err.response && err.response.status === 404) {
+            // Personalizar el mensaje de error para el código de estado 404
+            this.error = 'Usuario no encontrado. Por favor, verifique las credenciales.';
+            console.error('Usuario no encontrado:', err.message);
+          } else if (err.response.status === 401) {
+            // Personalizar el mensaje de error para el código de estado 401
+            this.error = 'Número de identificación o contraseña incorrectos.';
+            console.error('Error de autenticación:', err.message);
+          } else {
+            // Mostrar mensaje de error genérico en caso de otros errores
+            this.error = 'Ha ocurrido un error, por favor vuelva a intentarlo';
+            console.error('Error al autenticar:', err.message);
+          }
         }
-      } catch (err: any) {
-        // Mostrar mensaje de error si la autenticación falla
-        this.error = 'Ha ocurrido un error, por favor vuelva a intentarlo';
-        console.error('Error al autenticar:', err.message);
-      }
     },
   },
 });
