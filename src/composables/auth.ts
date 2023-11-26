@@ -1,5 +1,6 @@
 // auth.ts
-import { ref } from 'vue';
+import { ref, readonly, Ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 interface User {
   id: number;
@@ -12,20 +13,24 @@ interface User {
 
 export function useAuth() {
   const isAuthenticated = ref(false);
-  const user = ref<User | null>(null);
+  const user: Ref<User | null> = ref(null);
+  const router = useRouter();
 
   function setUser(userData: User) {
+    console.log('setUser llamado con:', userData);
     isAuthenticated.value = true;
     user.value = userData;
+    // Almacena la información en localStorage
+    localStorage.setItem('user', JSON.stringify(userData));
+    console.log('Usuario almacenado en localStorage:', userData);
   }
+  
 
   function logout() {
-    // Lógica de cierre de sesión
     isAuthenticated.value = false;
     user.value = null;
-    // Redirigir a la página de inicio de sesión
-    // Ajusta la ruta según tu configuración
-    window.location.href = '/login';
+    localStorage.removeItem('user'); // Elimina la información del localStorage
+    router.replace('/login');
   }
 
   return {

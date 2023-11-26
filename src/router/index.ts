@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
+import { useAuth } from '@/composables/auth';
 import HomePage from '../views/HomePage.vue'
 import Login from '../views/login/Login.vue'
 import Registro from '../views/login/Registro.vue'
@@ -30,6 +31,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/dashboard/profesional',
     name: 'DashboardProfesional',
     component: DashboardProfesional,
+    meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/paciente',
@@ -40,7 +42,18 @@ const routes: Array<RouteRecordRaw> = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
+
+router.beforeEach((to, from, next) => {
+  const { isAuthenticated } = useAuth();
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    // Redirigir a la página de inicio de sesión si no estás autenticado
+    next('/login');
+  } else {
+    next();
+  }
+});
 
 export default router

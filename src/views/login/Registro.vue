@@ -1,10 +1,6 @@
 <template>
     <ion-page>
-      <ion-header>
-        <ion-toolbar>
-          <ion-title class="ion-text-center">Salud Domiciliaria Avances SAS</ion-title>
-        </ion-toolbar>
-      </ion-header>
+      
   
       <ion-content class="ion-padding">
         <div class="register-container">

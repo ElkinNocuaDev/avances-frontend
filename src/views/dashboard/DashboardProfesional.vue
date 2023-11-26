@@ -1,64 +1,72 @@
 <template>
   <ion-page>
-    <!-- Encabezado -->
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
-        </ion-buttons>
-        <ion-title>Dashboard Profesional</ion-title>
-        <ion-title v-if="user" class="ion-text-end">
-          ¡Hola, {{ user.nombre }} {{ user.apellidos }}!
-        </ion-title>
-        <ion-buttons slot="end">
-          <ion-button @click="logout">
-            Cerrar sesión
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-
-    <!-- Contenido del Dashboard -->
-    <ion-content class="ion-padding">
-      <!-- Contenido del dashboard aquí -->
-    </ion-content>
-
-    <!-- Menú de navegación lateral -->
+    <!-- Menú lateral -->
     <ion-menu side="start" content-id="main-content">
       <ion-header>
         <ion-toolbar>
-          <ion-title>Menú</ion-title>
+          <ion-title>Opciones</ion-title>
         </ion-toolbar>
       </ion-header>
 
       <ion-content>
-        <!-- Contenido del menú aquí -->
         <ion-list>
-          <ion-item @click="navigateTo('historial')">Historial</ion-item>
+          <ion-item @click="navigateTo('historial')">Historias Médicas</ion-item>
+          <ion-item @click="navigateTo('registrar-historia')">Registrar Historia Médica</ion-item>
           <ion-item @click="navigateTo('configuracion')">Configuración</ion-item>
-          <!-- Agrega más opciones según sea necesario -->
         </ion-list>
       </ion-content>
     </ion-menu>
+
+    <!-- Encabezado -->
+    <ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-label class="title">Profesional</ion-label>
+
+    <ion-label v-if="user" class="user-info ion-text-end">
+      - {{ user.nombre }} {{ user.apellidos }}
+    </ion-label>
+
+
+    <ion-buttons slot="end">
+      <ion-button @click="logout">
+        Cerrar sesión
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+    <!-- Contenido principal -->
+    <ion-content id="main-content" class="ion-padding">
+      <ion-list>
+        <ion-item v-for="historia in historialMedico" :key="historia.id">
+          <ion-label>
+            <h2>{{ historia.paciente }}</h2>
+            <p>{{ historia.diagnostico }}</p>
+            <p>{{ historia.fecha }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
   </ion-page>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue';
-import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonButtons,
-  IonMenuButton,
-  IonTitle,
-  IonContent,
-  IonList,
-  IonItem,
-  IonButton,
-} from '@ionic/vue';
-import { useAuth } from '@/composables/auth'; // Importa el composable de autenticación
-import { useRouter } from 'vue-router';
+import { defineComponent, onBeforeMount, ref } from 'vue';
+import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonMenu } from '@ionic/vue';
+import { useAuth } from '@/composables/auth';
+import { watch } from 'vue';
+
+type HistoriaMedica = {
+  id: number;
+  paciente: string;
+  diagnostico: string;
+  fecha: string;
+};
 
 export default defineComponent({
   components: {
@@ -71,35 +79,92 @@ export default defineComponent({
     IonContent,
     IonList,
     IonItem,
-    IonButton,
+    IonLabel,
+    IonMenu,
   },
   setup() {
-    const { user, logout, isAuthenticated } = useAuth(); // Utiliza el composable de autenticación
-    const router = useRouter();
+    const { user, logout } = useAuth();
+    const historialMedico = ref<HistoriaMedica[]>([
+      {
+        id: 1,
+        paciente: 'Juan Pérez',
+        diagnostico: 'Resfriado común',
+        fecha: '2023-11-25',
+      },
+      {
+        id: 2,
+        paciente: 'María García',
+        diagnostico: 'Dolor de cabeza',
+        fecha: '2023-11-24',
+      },
+      // Agrega más historias según sea necesario
+    ]);
 
-    // Verificar la autenticación al cargar la página
-    onMounted(() => {
-      if (!isAuthenticated.value) {
-        // Si no está autenticado, redirigir a la página de inicio de sesión
-        router.push('/login');
+    onBeforeMount(() => {
+      console.log('DashboardProfesional se está montando');
+      
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        user.value = parsedUser;
+        console.log('Usuario recuperado desde localStorage:', parsedUser);
+      } else {
+        console.log('Usuario no encontrado en el almacenamiento local');
+      }
+
+      // Establecer un watcher solo si user no es null
+      if (user.value) {
+        watch(() => user.value, (newValue, oldValue) => {
+          console.log('Usuario actualizado en DashboardProfesional:', newValue);
+        });
+      } else {
+        console.log('Watcher no se ejecuta porque user es null');
       }
     });
 
     const navigateTo = (route: string) => {
-      // Implementa la lógica de navegación a la ruta especificada
-      // Puedes utilizar el router de Vue o el sistema de navegación que estés utilizando
       console.log(`Navegar a la ruta: ${route}`);
+      // Utiliza tu lógica de redirección aquí
     };
 
     return {
       user,
       logout,
       navigateTo,
+      historialMedico,
     };
   },
 });
 </script>
 
 <style scoped>
-/* Agrega estilos personalizados si es necesario */
+ion-header {
+  --ion-background-color: #f8f8f8; /* Cambia el color de fondo según tus preferencias */
+}
+
+ion-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px; /* Ajusta el relleno según tus preferencias */
+}
+
+.title {
+  font-size: 1 rem; /* Ajusta el tamaño del título según tus preferencias */
+  margin-top: 8px; /* Ajusta el margen superior al título según sea necesario */
+  margin-bottom: 8px; /* Agrega un margen inferior al título según sea necesario */
+  font-weight: bold; /* Agrega negrita al título si es necesario */
+}
+
+.user-info {
+  font-size: 1rem; /* Ajusta el tamaño del texto de usuario según tus preferencias */
+  margin-top: 4px; /* Ajusta el margen superior al texto de usuario según sea necesario */
+  margin-bottom: 4px; /* Ajusta el margen inferior al texto de usuario según sea necesario */
+  font-weight: normal; /* Puedes ajustar la negrita según tus preferencias */
+}
 </style>
+
+
+
+
+

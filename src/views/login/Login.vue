@@ -1,10 +1,6 @@
 <template>
   <ion-page>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title class="ion-text-center">Salud Domiciliaria Avances SAS</ion-title>
-      </ion-toolbar>
-    </ion-header>
+    
 
     <ion-content class="ion-padding">
       <div class="login-container">
@@ -43,7 +39,7 @@
 import { defineComponent } from 'vue';
 import axios from 'axios';
 import { IonInput } from '@ionic/vue';
-
+import { useAuth } from '@/composables/auth';
 
 
 export default defineComponent({
@@ -60,11 +56,13 @@ export default defineComponent({
   methods: {
     async login() {
 
+
       // Validar campos vacíos
       if (!this.numeroIdentificacion || !this.password) {
         this.error = 'Por favor, complete todos los campos.';
         return;
       }
+      
 
       try {
 
@@ -82,13 +80,21 @@ export default defineComponent({
           }
         );
 
-        if (response.data.token) {
+        if (response.data.token && response.data.user) {
           const user = response.data.user;
+          console.log('Usuario logueado:', user);
+          const { setUser } = useAuth();
+
+          // Almacena la información del usuario utilizando setUser del composable useAuth
+          setUser(user);
+          
 
           if (user.rol === 'profesional') {
-            this.$router.push('/dashboard/profesional');
+            // this.$router.push('/dashboard/profesional');
+            this.$router.replace('/dashboard/profesional');
+            // console.log('Usuario logueado:', user);
           } else if (user.rol === 'paciente') {
-            this.$router.push('/dashboard/paciente');
+            this.$router.replace('/dashboard/paciente');
           }
           } else {
             this.error = 'Número de identificación o contraseña incorrectos';
@@ -109,6 +115,9 @@ export default defineComponent({
           }
         }
     },
+    async logout() {
+    await useAuth().logout();
+  },
   },
 });
 </script>
