@@ -42,6 +42,7 @@
 
     <!-- Contenido principal -->
     <ion-content id="main-content" class="ion-padding">
+      <ion-label class="title">Historial de Historias Médicas</ion-label>
       <ion-list>
         <ion-item v-for="historia in historialMedico" :key="historia.id">
           <ion-label>

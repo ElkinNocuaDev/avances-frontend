@@ -15,7 +15,8 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/home',
     name: 'Home',
-    component: HomePage
+    component: HomePage,
+    meta: { requiresAuth: true },
   },
   {
     path: '/login',
@@ -37,6 +38,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/dashboard/paciente',
     name: 'DashboardPaciente',
     component: DashboardPaciente,
+    meta: { requiresAuth: true },
   },
 ]
 

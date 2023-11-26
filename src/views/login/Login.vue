@@ -28,7 +28,7 @@
         <!-- Texto para redirigir a la página de registro -->
         <div class="register-link">
           <p>¿No tienes una cuenta?</p>
-          <router-link to="/registro">Regístrate aquí</router-link>
+          <router-link :to="{ name: 'Registro' }">Regístrate aquí</router-link>
         </div>
       </div>
     </ion-content>
