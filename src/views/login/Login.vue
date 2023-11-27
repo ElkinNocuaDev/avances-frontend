@@ -28,7 +28,8 @@
         <!-- Texto para redirigir a la página de registro -->
         <div class="register-link">
           <p>¿No tienes una cuenta?</p>
-          <router-link :to="{ name: 'Registro' }">Regístrate aquí</router-link>
+          <!-- <router-link :to="{ name: 'Registro' }">Regístrate aquí</router-link> -->
+          <button @click="handleClick">Regístrate aquí</button>  
         </div>
       </div>
     </ion-content>
@@ -54,6 +55,10 @@ export default defineComponent({
     };
   },
   methods: {
+    handleClick() {
+      const url = new URL('/registro', window.location.origin)
+      window.location.href = url.toString()
+    },
     async login() {
 
 

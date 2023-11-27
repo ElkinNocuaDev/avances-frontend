@@ -78,7 +78,8 @@
         <!-- Texto para redirigir a la página de registro -->
       <div class="register-link">
         <p>¿Ya tienes una cuenta?</p>
-        <router-link :to="{ name: 'Login' }">Puedes ingresar aquí</router-link>
+        <!-- <router-link :to="{ name: 'Login' }">Puedes ingresar aquí</router-link> -->
+        <button @click="handleClick">Puedes ingresar aquí</button>
       </div>
       </div>
     </ion-content>
@@ -111,7 +112,10 @@ data() {
   };
 },
 methods: {
-
+  handleClick() {
+      const url = new URL('/login', window.location.origin)
+      window.location.href = url.toString()
+  },
   async register() {
 
     console.log('Numero de Identificacion:', this.numeroIdentificacion);
@@ -231,6 +235,20 @@ margin-top: 10px;
 }
 .success-message {
 color: green; /* o el color que desees para mensajes de éxito */
+}
+
+.register-link {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.register-link p {
+  margin-bottom: 5px;
+}
+
+.register-link a {
+  color: var(--ion-color-primary);
+  text-decoration: underline;
 }
 
 </style>

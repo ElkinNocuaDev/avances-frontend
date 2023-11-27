@@ -30,7 +30,9 @@ export function useAuth() {
     isAuthenticated.value = false;
     user.value = null;
     localStorage.removeItem('user'); // Elimina la información del localStorage
-    router.replace('/login');
+    //router.replace('/login');
+    const url = new URL('/login', window.location.origin)
+    window.location.href = url.toString()
   }
 
   return {
