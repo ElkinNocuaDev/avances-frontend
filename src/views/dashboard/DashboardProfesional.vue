@@ -60,7 +60,8 @@
 import { defineComponent, onBeforeMount, ref } from 'vue';
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonMenu } from '@ionic/vue';
 import { useAuth } from '@/composables/auth';
-import { watch } from 'vue';
+import axios from 'axios';
+
 
 type HistoriaMedica = {
   id: number;
@@ -85,41 +86,21 @@ export default defineComponent({
   },
   setup() {
     const { user, logout } = useAuth();
-    const historialMedico = ref<HistoriaMedica[]>([
-      {
-        id: 1,
-        paciente: 'Juan Pérez',
-        diagnostico: 'Resfriado común',
-        fecha: '2023-11-25',
-      },
-      {
-        id: 2,
-        paciente: 'María García',
-        diagnostico: 'Dolor de cabeza',
-        fecha: '2023-11-24',
-      },
-      // Agrega más historias según sea necesario
-    ]);
+    const historialMedico = ref<HistoriaMedica[]>([]);
 
-    onBeforeMount(() => {
-      console.log('DashboardProfesional se está montando');
-      
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        user.value = parsedUser;
-        console.log('Usuario recuperado desde localStorage:', parsedUser);
-      } else {
-        console.log('Usuario no encontrado en el almacenamiento local');
-      }
+    onBeforeMount(async () => {
+      if (user.value && user.value.token) {
+        try {
+          const response = await axios.get(`http://localhost:8000/api/historias-medicas/${user.value.id}`, {
+            headers: {
+              Authorization: `Bearer ${user.value.token}`,
+            },
+          });
 
-      // Establecer un watcher solo si user no es null
-      if (user.value) {
-        watch(() => user.value, (newValue, oldValue) => {
-          console.log('Usuario actualizado en DashboardProfesional:', newValue);
-        });
-      } else {
-        console.log('Watcher no se ejecuta porque user es null');
+          historialMedico.value = response.data;
+        } catch (error) {
+          console.error('Error al obtener historias médicas:', error);
+        }
       }
     });
 

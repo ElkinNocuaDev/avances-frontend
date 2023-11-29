@@ -41,23 +41,27 @@
 
     <!-- Contenido principal -->
     <ion-content id="main-content" class="ion-padding">
-    <ion-label class="title">Historia Médica</ion-label>
-    <ion-list>
-      <ion-item v-for="historia in historialMedico" :key="historia.id">
-        <ion-label>
-          <h2>{{ historia.paciente }}</h2>
-          <p>{{ historia.diagnostico }}</p>
-          <p>{{ historia.fecha }}</p>
-          <!-- Agrega más campos según sea necesario -->
-          <p>Consecutivo: {{ historia.consecutivo }}</p>
-          <p>Estado del paciente: {{ historia.estado_paciente }}</p>
-          <p>Antecedentes: {{ historia.antecedentes }}</p>
-          <p>Evolución final: {{ historia.evolucion_final }}</p>
-          <p>Concepto profesional: {{ historia.concepto_profesional }}</p>
-          <p>Recomendaciones: {{ historia.recomendaciones }}</p>
-        </ion-label>
-      </ion-item>
-    </ion-list>
+    <ion-label class="title">Historias Médicas del Paciente</ion-label>
+    <ion-list v-if="historialMedico.length">
+  <ion-item v-for="historia in historialMedico" :key="historia.id">
+    <ion-label>
+      <h2>{{ historia.paciente }}</h2>
+      <p>{{ historia.diagnostico }}</p>
+      <p>{{ historia.fecha }}</p>
+      <!-- Agrega más campos según sea necesario -->
+      <p>Consecutivo: {{ historia.consecutivo }}</p>
+      <p>Estado del paciente: {{ historia.estado_paciente }}</p>
+      <p>Antecedentes: {{ historia.antecedentes }}</p>
+      <p>Evolución final: {{ historia.evolucion_final }}</p>
+      <p>Concepto profesional: {{ historia.concepto_profesional }}</p>
+      <p>Recomendaciones: {{ historia.recomendaciones }}</p>
+    </ion-label>
+  </ion-item>
+</ion-list>
+
+    <div v-else>
+      No hay historias médicas.
+    </div>
   </ion-content>
   </ion-page>
 </template>
@@ -67,6 +71,7 @@ import { defineComponent, onBeforeMount, ref } from 'vue';
 import { IonPage, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonMenu } from '@ionic/vue';
 import { useAuth } from '@/composables/auth';
 import { watch } from 'vue';
+import axios from 'axios';
 
 type HistoriaMedica = {
   id: number;
@@ -98,43 +103,55 @@ export default defineComponent({
   setup() {
     const { user, logout } = useAuth();
 
-    const historialMedico = ref<HistoriaMedica[]>([
-      {
-        id: 1,
-        paciente: 'Elkin Nocua',
-        diagnostico: 'Resfriado común',
-        fecha: '2023-11-25',
-        consecutivo: 'ABC123',
-        estado_paciente: 'En tratamiento',
-        antecedentes: 'Antecedentes médicos del paciente...',
-        evolucion_final: 'Evolución final de la consulta...',
-        concepto_profesional: 'Concepto del profesional...',
-        recomendaciones: 'Recomendaciones para el paciente...',
-      },
-      // ... (otras historias simuladas) ...
-    ]);
+    const historialMedico = ref<HistoriaMedica[]>([]);
 
-    onBeforeMount(() => {
-      console.log('DashboardProfesional se está montando');
-      
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        user.value = parsedUser;
-        console.log('Usuario recuperado desde localStorage:', parsedUser);
-      } else {
-        console.log('Usuario no encontrado en el almacenamiento local');
-      }
+onBeforeMount(async () => {
+  console.log('DashboardProfesional se está montando');
 
-      // Establecer un watcher solo si user no es null
-      if (user.value) {
-        watch(() => user.value, (newValue, oldValue) => {
-          console.log('Usuario actualizado en DashboardProfesional:', newValue);
+  const storedUser = localStorage.getItem('user');
+  if (storedUser) {
+    const parsedUser = JSON.parse(storedUser);
+    user.value = parsedUser;
+    console.log('Usuario recuperado desde localStorage:', parsedUser);
+
+    // Verificar que user.value y user.value.token no sean nulos antes de hacer la solicitud HTTP
+    if (user.value && user.value.token) {
+      console.log('info usuario:', user.value);
+      console.log('token usuario:', user.value.token);
+      try {
+        // Hacer la solicitud HTTP al backend
+        const response = await axios.get(`http://localhost:8000/api/usuarios/${user.value.id}`, {
+          headers: {
+            Authorization: `Bearer ${user.value.token}`,
+            'Content-Type': 'application/json',
+          },
         });
-      } else {
-        console.log('Watcher no se ejecuta porque user es null');
+
+        // Asignar el historial médico obtenido del backend a la variable local
+        historialMedico.value = response.data.historiasMedicas;
+        console.log('Historial Médico:', historialMedico.value);
+      } catch (error) {
+        console.error('Error al obtener historias médicas:', error);
+        // Manejar el error según sea necesario
       }
-    });
+    } else {
+      console.error('Usuario o token no disponibles');
+      // Manejar la falta de usuario o token según sea necesario
+    }
+
+    // Establecer un watcher solo si user no es null
+    if (user.value) {
+      watch(() => user.value, (newValue, oldValue) => {
+        console.log('Usuario actualizado en DashboardProfesional:', newValue);
+      });
+    } else {
+      console.log('Watcher no se ejecuta porque user es null');
+    }
+  } else {
+    console.log('Usuario no encontrado en el almacenamiento local');
+  }
+});
+
 
     const navigateTo = (route: string) => {
       console.log(`Navegar a la ruta: ${route}`);

@@ -86,20 +86,18 @@ export default defineComponent({
         );
 
         if (response.data.token && response.data.user) {
-          const user = response.data.user;
-          console.log('Usuario logueado:', user);
+          const { user } = response.data;
+          // console.log('Usuario logueado con token:', token);
           const { setUser } = useAuth();
-
-          // Almacena la información del usuario utilizando setUser del composable useAuth
-          setUser(user);
-          
+          setUser(response.data);
 
           if (user.rol === 'profesional') {
             // this.$router.push('/dashboard/profesional');
             this.$router.replace('/dashboard/profesional');
-            // console.log('Usuario logueado:', user);
+            console.log('Usuario logueado:', user);
           } else if (user.rol === 'paciente') {
             this.$router.replace('/dashboard/paciente');
+            console.log('Usuario logueado:', user);
           }
           } else {
             this.error = 'Número de identificación o contraseña incorrectos';

@@ -8,6 +8,7 @@ interface User {
   nombre: string;
   apellidos: string;
   rol: string;
+  token: string;
   // Puedes agregar más campos según sea necesario
 }
 
@@ -16,13 +17,14 @@ export function useAuth() {
   const user: Ref<User | null> = ref(null);
   const router = useRouter();
 
-  function setUser(userData: User) {
-    console.log('setUser llamado con:', userData);
+  function setUser(userData: { user: User; token: string }) {
+    console.log('setUser llamado con:', userData.user, userData.token);
     isAuthenticated.value = true;
-    user.value = userData;
+    user.value = userData.user;
+    user.value.token = userData.token;
     // Almacena la información en localStorage
-    localStorage.setItem('user', JSON.stringify(userData));
-    console.log('Usuario almacenado en localStorage:', userData);
+    localStorage.setItem('user', JSON.stringify(user.value));
+    console.log('Usuario almacenado en localStorage:', user.value);
   }
   
 
